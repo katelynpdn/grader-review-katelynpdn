@@ -36,15 +36,16 @@ fi
 
 java -cp $CPATH org.junit.runner.JUnitCore TestListExamples > junit-output.txt
 
-cat junit-output.txt
-lastline=$(cat junit-output.txt | tail -n 2 | head -n 1)
-if [[ $(echo $lastline | awk '{print $1}') == "Tests" ]]
-then
-    test=$(echo $lastline | awk -F', ' '{print $1}' | awk '{print $3}')
-    failures=$(echo $lastline | awk -F', ' '{print $2}' | awk '{print $2}')
-    successes=$(( test - failures ))
-else
-    successes=3
-    test=3
+allSuccess=$(grep -i "OK (" junit-output.txt)
+if [[ $? -eq 0 ]]
+then 
+  allSuccessReturn=$(echo $allSuccess | awk -F'[ (]' '{print $3}')
+  echo "All tests passed, your score is $allSuccessReturn / $allSuccessReturn"
+  exit 0
 fi
-echo "Your score is $successes / $test tests passed"
+
+lastline=$(grep -i "Tests run:" junit-output.txt)
+tests=$(echo $lastline | awk -F'[, ]' '{print $3}')
+failures=$(echo $lastline | awk -F'[, ]' '{print $6}')
+successes=$((tests - failures))
+echo "Your score is $successes / $tests"
